@@ -25,7 +25,7 @@ export default function ToDoForm({ addTodo }) {
       />
       <button
         type="submit"
-        className="bg-green-500 hover:bg-green-700 text-white font-bold py-1 px-2 rounded"
+        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded"
       >
         Add Todo
       </button>

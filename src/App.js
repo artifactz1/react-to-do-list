@@ -20,9 +20,21 @@ function App() {
     setTodos(newTodos);
   };
 
+  const incompleteTodo = (index) => {
+    const newTodos = [...todos];
+    newTodos[index].isCompleted = false;
+    setTodos(newTodos);
+  };
+
   const removeTodo = (index) => {
     const newTodos = [...todos];
     newTodos.splice(index, 1);
+    setTodos(newTodos);
+  };
+
+  const editTodo = (index, newText) => {
+    const newTodos = [...todos];
+    newTodos[index].text = newText;
     setTodos(newTodos);
   };
 
@@ -39,8 +51,10 @@ function App() {
               key={index}
               index={index}
               item={item}
+              incompleteTodo={incompleteTodo}
               completeTodo={completeTodo}
               removeTodo={removeTodo}
+              editTodo={editTodo}
             />
           ))}
         </div>
