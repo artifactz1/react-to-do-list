@@ -40,7 +40,7 @@ function App() {
   };
 
   const login = async () => {
-    await supabase.auth.signIn({
+    await supabase.auth.signInWithOAuth({
       provider: "github",
     });
   };
@@ -66,7 +66,8 @@ function App() {
           ))}
         </div>
       </div>
-      {/* <button onClick={login}>Login with Github</button> */}
+
+      <button onClick={login}>Login with Github</button>
     </div>
   );
 }
