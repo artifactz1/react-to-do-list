@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import TodoForm from "./TodoForm";
 import TodoItem from "./TodoItem";
+import { supabase } from "./supabaseClient";
 
 function App() {
   const [todos, setTodos] = useState([
@@ -38,6 +39,12 @@ function App() {
     setTodos(newTodos);
   };
 
+  const login = async () => {
+    await supabase.auth.signIn({
+      provider: "github",
+    });
+  };
+
   return (
     <div className="min-h-screen bg-gray-100 py-6 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md mx-auto bg-white rounded-lg shadow-lg overflow-hidden">
@@ -59,6 +66,7 @@ function App() {
           ))}
         </div>
       </div>
+      {/* <button onClick={login}>Login with Github</button> */}
     </div>
   );
 }
