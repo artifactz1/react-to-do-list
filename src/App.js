@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import TodoForm from "./TodoForm";
 import TodoItem from "./TodoItem";
 import { supabase } from "./supabaseClient";
@@ -9,6 +9,8 @@ function App() {
     { text: "Build a to-do app", isCompleted: false },
     { text: "Master React", isCompleted: false },
   ]);
+
+  const [user, setUser] = useState(null);
 
   const addTodo = (text) => {
     const newTodos = [...todos, { text }];
@@ -45,6 +47,36 @@ function App() {
     });
   };
 
+  const logout = async () => {
+    await supabase.auth.signOut();
+  };
+
+  useEffect(() => {
+    const session = supabase.auth.getSession();
+    setUser(session);
+
+    // checks if user is signed in or out
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        switch (event) {
+          case "SIGNED_IN":
+            setUser(session);
+            break;
+
+          case "SIGNED_OUT":
+            setUser(null);
+          default:
+        }
+      }
+    );
+
+    return () => {
+      supabase.removeAllChannels();
+    };
+
+    // console.log(session);
+  }, []);
+
   return (
     <div className="min-h-screen bg-gray-100 py-6 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md mx-auto bg-white rounded-lg shadow-lg overflow-hidden">
@@ -67,7 +99,15 @@ function App() {
         </div>
       </div>
 
-      <button onClick={login}>Login with Github</button>
+      {user ? (
+        <div>
+          <h1>Authenticated</h1>
+
+          <button onClick={logout}>Logout</button>
+        </div>
+      ) : (
+        <button onClick={login}>Login with Github</button>
+      )}
     </div>
   );
 }
