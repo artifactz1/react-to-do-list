@@ -13,16 +13,25 @@ function App() {
 	const [user, setUser] = useState(null);
 
 	const addTodo = async title => {
-		const res = await supabase
-			.from("todo")
-			.insert({ title: title, user_id: user.user_id })
-			.select("*")
-			.single();
+		console.log("USER", user.id);
 
-		console.log(res);
+		if (user) {
+			const { data, error } = await supabase
+				.from("todo")
+				.insert({ title: title, user_id: user.id }) // Ensure user_id matches your table's user identifier
+				.select("*")
+				.single();
 
-		const newTodos = [...todos, { title }];
-		setTodos(newTodos);
+			if (error) {
+				console.error("Error inserting data:", error);
+			} else {
+				console.log(data);
+				const newTodos = [...todos, { title }];
+				setTodos(newTodos);
+			}
+		} else {
+			console.error("User is not authenticated");
+		}
 	};
 
 	const completeTodo = index => {
@@ -50,9 +59,16 @@ function App() {
 	};
 
 	const login = async () => {
-		await supabase.auth.signInWithOAuth({
+		const { user, error } = await supabase.auth.signInWithOAuth({
 			provider: "github",
 		});
+		if (error) {
+			console.error("Error user signing in:", error);
+		} else {
+			console.log("User signed in successfully", user);
+		}
+
+		setUser(user);
 	};
 
 	const logout = async () => {
@@ -60,28 +76,26 @@ function App() {
 	};
 
 	useEffect(() => {
-		const session = supabase.auth.getSession();
-		setUser(session);
-
-		// checks if user is signed in or out
-		supabase.auth.onAuthStateChange((event, session) => {
-			switch (event) {
-				case "SIGNED_IN":
-					setUser(session);
-					break;
-
-				case "SIGNED_OUT":
-					setUser(null);
-					break;
-				default:
+		// Handle authentication state change
+		const { data: authListener } = supabase.auth.onAuthStateChange(
+			(event, session) => {
+				switch (event) {
+					case "SIGNED_IN":
+						setUser(session.user);
+						console.log("SIGNED IN");
+						console.log(session.user.id);
+						break;
+					case "SIGNED_OUT":
+						setUser(null);
+						break;
+					default:
+				}
 			}
-		});
+		);
 
-		// console.log(session);
-		// console.log(user);
-
+		// Cleanup listener on component unmount
 		return () => {
-			supabase.removeAllChannels();
+			authListener.subscription.unsubscribe();
 		};
 	}, []);
 
