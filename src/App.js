@@ -4,112 +4,120 @@ import TodoItem from "./TodoItem";
 import { supabase } from "./supabaseClient";
 
 function App() {
-  const [todos, setTodos] = useState([
-    { text: "Learn React", isCompleted: false },
-    { text: "Build a to-do app", isCompleted: false },
-    { text: "Master React", isCompleted: false },
-  ]);
+	const [todos, setTodos] = useState([
+		{ title: "Learn React", isCompleted: false },
+		{ title: "Build a to-do app", isCompleted: false },
+		{ title: "Master React", isCompleted: false },
+	]);
 
-  const [user, setUser] = useState(null);
+	const [user, setUser] = useState(null);
 
-  const addTodo = (text) => {
-    const newTodos = [...todos, { text }];
-    setTodos(newTodos);
-  };
+	const addTodo = async title => {
+		const res = await supabase
+			.from("todo")
+			.insert({ title: title, user_id: user.user_id })
+			.select("*")
+			.single();
 
-  const completeTodo = (index) => {
-    const newTodos = [...todos];
-    newTodos[index].isCompleted = true;
-    setTodos(newTodos);
-  };
+		console.log(res);
 
-  const incompleteTodo = (index) => {
-    const newTodos = [...todos];
-    newTodos[index].isCompleted = false;
-    setTodos(newTodos);
-  };
+		const newTodos = [...todos, { title }];
+		setTodos(newTodos);
+	};
 
-  const removeTodo = (index) => {
-    const newTodos = [...todos];
-    newTodos.splice(index, 1);
-    setTodos(newTodos);
-  };
+	const completeTodo = index => {
+		const newTodos = [...todos];
+		newTodos[index].isCompleted = true;
+		setTodos(newTodos);
+	};
 
-  const editTodo = (index, newText) => {
-    const newTodos = [...todos];
-    newTodos[index].text = newText;
-    setTodos(newTodos);
-  };
+	const incompleteTodo = index => {
+		const newTodos = [...todos];
+		newTodos[index].isCompleted = false;
+		setTodos(newTodos);
+	};
 
-  const login = async () => {
-    await supabase.auth.signInWithOAuth({
-      provider: "github",
-    });
-  };
+	const removeTodo = index => {
+		const newTodos = [...todos];
+		newTodos.splice(index, 1);
+		setTodos(newTodos);
+	};
 
-  const logout = async () => {
-    await supabase.auth.signOut();
-  };
+	const editTodo = (index, newText) => {
+		const newTodos = [...todos];
+		newTodos[index].text = newText;
+		setTodos(newTodos);
+	};
 
-  useEffect(() => {
-    const session = supabase.auth.getSession();
-    setUser(session);
+	const login = async () => {
+		await supabase.auth.signInWithOAuth({
+			provider: "github",
+		});
+	};
 
-    // checks if user is signed in or out
-    const { data: authListener } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        switch (event) {
-          case "SIGNED_IN":
-            setUser(session);
-            break;
+	const logout = async () => {
+		await supabase.auth.signOut();
+	};
 
-          case "SIGNED_OUT":
-            setUser(null);
-          default:
-        }
-      }
-    );
+	useEffect(() => {
+		const session = supabase.auth.getSession();
+		setUser(session);
 
-    return () => {
-      supabase.removeAllChannels();
-    };
+		// checks if user is signed in or out
+		supabase.auth.onAuthStateChange((event, session) => {
+			switch (event) {
+				case "SIGNED_IN":
+					setUser(session);
+					break;
 
-    // console.log(session);
-  }, []);
+				case "SIGNED_OUT":
+					setUser(null);
+					break;
+				default:
+			}
+		});
 
-  return (
-    <div className="min-h-screen bg-gray-100 py-6 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md mx-auto bg-white rounded-lg shadow-lg overflow-hidden">
-        <h1 className="text-3xl font-bold text-center py-4 bg-gray-200">
-          To-Do List
-        </h1>
-        <div className="p-4">
-          <TodoForm addTodo={addTodo} />
-          {todos.map((item, index) => (
-            <TodoItem
-              key={index}
-              index={index}
-              item={item}
-              incompleteTodo={incompleteTodo}
-              completeTodo={completeTodo}
-              removeTodo={removeTodo}
-              editTodo={editTodo}
-            />
-          ))}
-        </div>
-      </div>
+		// console.log(session);
+		// console.log(user);
 
-      {user ? (
-        <div>
-          <h1>Authenticated</h1>
+		return () => {
+			supabase.removeAllChannels();
+		};
+	}, []);
 
-          <button onClick={logout}>Logout</button>
-        </div>
-      ) : (
-        <button onClick={login}>Login with Github</button>
-      )}
-    </div>
-  );
+	return (
+		<div className='min-h-screen bg-gray-100 py-6 px-4 sm:px-6 lg:px-8'>
+			<div className='max-w-md mx-auto bg-white rounded-lg shadow-lg overflow-hidden'>
+				<h1 className='text-3xl font-bold text-center py-4 bg-gray-200'>
+					To-Do List
+				</h1>
+				<div className='p-4'>
+					<TodoForm addTodo={addTodo} />
+					{todos.map((item, index) => (
+						<TodoItem
+							key={index}
+							index={index}
+							item={item}
+							incompleteTodo={incompleteTodo}
+							completeTodo={completeTodo}
+							removeTodo={removeTodo}
+							editTodo={editTodo}
+						/>
+					))}
+				</div>
+			</div>
+
+			{user ? (
+				<div>
+					<h1>Authenticated</h1>
+
+					<button onClick={logout}>Logout</button>
+				</div>
+			) : (
+				<button onClick={login}>Login with Github</button>
+			)}
+		</div>
+	);
 }
 
 export default App;
