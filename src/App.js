@@ -4,13 +4,9 @@ import TodoItem from "./TodoItem";
 import { supabase } from "./supabaseClient";
 
 function App() {
-	const [todos, setTodos] = useState([
-		{ title: "Learn React", isCompleted: false },
-		{ title: "Build a to-do app", isCompleted: false },
-		{ title: "Master React", isCompleted: false },
-	]);
-
+	const [todos, setTodos] = useState(null);
 	const [user, setUser] = useState(null);
+	const [error, setError] = useState(null);
 
 	const addTodo = async title => {
 		console.log("USER", user.id);
@@ -30,9 +26,20 @@ function App() {
 				setTodos(newTodos);
 			}
 		} else {
+			setError(error);
 			console.error("User is not authenticated");
 		}
 	};
+
+	const getTodo = async () => {
+		const res = await supabase.from("todo").select("*");
+		setTodos(res.data);
+		console.log(res);
+	};
+
+	useEffect(() => {
+		getTodo();
+	}, []);
 
 	const completeTodo = index => {
 		const newTodos = [...todos];
@@ -107,17 +114,21 @@ function App() {
 				</h1>
 				<div className='p-4'>
 					<TodoForm addTodo={addTodo} />
-					{todos.map((item, index) => (
-						<TodoItem
-							key={index}
-							index={index}
-							item={item}
-							incompleteTodo={incompleteTodo}
-							completeTodo={completeTodo}
-							removeTodo={removeTodo}
-							editTodo={editTodo}
-						/>
-					))}
+					{Array.isArray(todos) && todos.length > 0 && (
+						<div>
+							{todos.map((item, index) => (
+								<TodoItem
+									key={index}
+									index={index}
+									item={item}
+									incompleteTodo={incompleteTodo}
+									completeTodo={completeTodo}
+									removeTodo={removeTodo}
+									editTodo={editTodo}
+								/>
+							))}
+						</div>
+					)}
 				</div>
 			</div>
 
