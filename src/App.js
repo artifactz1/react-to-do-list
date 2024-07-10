@@ -12,22 +12,28 @@ function App() {
 		console.log("USER", user.id);
 
 		if (user) {
-			const { data, error } = await supabase
-				.from("todo")
-				.insert({ title: title, user_id: user.id }) // Ensure user_id matches your table's user identifier
-				.select("*")
-				.single();
+			try {
+				const { data, error } = await supabase
+					.from("todo")
+					.insert({ title: title, user_id: user.id }) // Ensure user_id matches your table's user identifier
+					.select("*")
+					.single();
 
-			if (error) {
-				console.error("Error inserting data:", error);
-			} else {
-				console.log(data);
-				const newTodos = [...todos, { title }];
-				setTodos(newTodos);
+				console.log("Add", data);
+
+				if (error) {
+					console.error("Error inserting data:", error);
+				} else {
+					getTodo();
+				}
+			} catch (err) {
+				console.error("An unexpected error occurred:", err);
+				setError(err.message || "An unexpected error occurred");
 			}
 		} else {
-			setError(error);
-			console.error("User is not authenticated");
+			const errorMessage = "User is not authenticated";
+			setError(errorMessage);
+			console.error(error);
 		}
 	};
 
@@ -41,16 +47,60 @@ function App() {
 		getTodo();
 	}, []);
 
-	const completeTodo = index => {
-		const newTodos = [...todos];
-		newTodos[index].isCompleted = true;
-		setTodos(newTodos);
+	const completeTodo = async id => {
+		if (user) {
+			try {
+				const { data, error } = await supabase
+					.from("todo")
+					.update({ complete: true })
+					.eq("id", id)
+					.select("*")
+					.single();
+
+				console.log("Complete Button", data);
+
+				if (error) {
+					console.error("Error updating data: ", error);
+				} else {
+					console.log("Todo item updated successfully:", data);
+					getTodo();
+				}
+			} catch (err) {
+				console.error("An unexpected error occurred:", err);
+			}
+		} else {
+			const errorMessage = "User is not authenticated";
+			setError(errorMessage);
+			console.error(errorMessage);
+		}
 	};
 
-	const incompleteTodo = index => {
-		const newTodos = [...todos];
-		newTodos[index].isCompleted = false;
-		setTodos(newTodos);
+	const incompleteTodo = async id => {
+		if (user) {
+			try {
+				const { data, error } = await supabase
+					.from("todo")
+					.update({ complete: false })
+					.eq("id", id)
+					.select("*")
+					.single();
+
+				console.log("Complete Button", data);
+
+				if (error) {
+					console.error("Error updating data: ", error);
+				} else {
+					console.log("Todo item updated successfully:", data);
+					getTodo();
+				}
+			} catch (err) {
+				console.error("An unexpected error occurred:", err);
+			}
+		} else {
+			const errorMessage = "User is not authenticated";
+			setError(errorMessage);
+			console.error(errorMessage);
+		}
 	};
 
 	const removeTodo = index => {
@@ -80,6 +130,10 @@ function App() {
 
 	const logout = async () => {
 		await supabase.auth.signOut();
+
+		// setUser(null);
+		// setTodos(null);
+		// setError(null);
 	};
 
 	useEffect(() => {
@@ -93,7 +147,10 @@ function App() {
 						console.log(session.user.id);
 						break;
 					case "SIGNED_OUT":
+						console.log("SIGNED OUT");
 						setUser(null);
+						setTodos(null);
+						setError(null);
 						break;
 					default:
 				}
@@ -113,13 +170,12 @@ function App() {
 					To-Do List
 				</h1>
 				<div className='p-4'>
-					<TodoForm addTodo={addTodo} />
+					<TodoForm key={todos} addTodo={addTodo} />
 					{Array.isArray(todos) && todos.length > 0 && (
 						<div>
-							{todos.map((item, index) => (
+							{todos.map(item => (
 								<TodoItem
-									key={index}
-									index={index}
+									index={item.id}
 									item={item}
 									incompleteTodo={incompleteTodo}
 									completeTodo={completeTodo}

@@ -24,7 +24,7 @@ export default function TodoItem({
 		<div className='flex items-center justify-between border-b border-gray-300 py-2'>
 			<span
 				className={`flex-1 ${
-					item.isCompleted ? "line-through text-green-500" : "text-yellow-500"
+					item.complete ? "line-through text-green-500" : "text-yellow-500"
 				}`}>
 				{isEdit ? (
 					<input
@@ -45,7 +45,7 @@ export default function TodoItem({
 			</span>
 			<div>
 				{/* Complete */}
-				{!item.isCompleted && (
+				{item.complete === false && (
 					<button
 						className='bg-green-500 hover:bg-green-700 text-white font-bold py-1 px-2 mr-2 rounded'
 						onClick={() => completeTodo(index)}>
@@ -54,7 +54,7 @@ export default function TodoItem({
 				)}
 
 				{/* Undo / Incomplete */}
-				{item.isCompleted && (
+				{item.complete === true && (
 					<button
 						className='bg-green-500 hover:bg-green-700 text-white font-bold py-1 px-2 mr-2 rounded'
 						onClick={() => incompleteTodo(index)}>
