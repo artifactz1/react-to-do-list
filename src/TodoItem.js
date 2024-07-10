@@ -3,8 +3,7 @@ import React, { useState } from "react";
 export default function TodoItem({
 	item,
 	index,
-	incompleteTodo,
-	completeTodo,
+	updateTodo,
 	removeTodo,
 	editTodo,
 }) {
@@ -48,7 +47,7 @@ export default function TodoItem({
 				{item.complete === false && (
 					<button
 						className='bg-green-500 hover:bg-green-700 text-white font-bold py-1 px-2 mr-2 rounded'
-						onClick={() => completeTodo(index)}>
+						onClick={() => updateTodo(item)}>
 						Complete
 					</button>
 				)}
@@ -57,7 +56,7 @@ export default function TodoItem({
 				{item.complete === true && (
 					<button
 						className='bg-green-500 hover:bg-green-700 text-white font-bold py-1 px-2 mr-2 rounded'
-						onClick={() => incompleteTodo(index)}>
+						onClick={() => updateTodo(item)}>
 						Undo
 					</button>
 				)}
@@ -73,7 +72,7 @@ export default function TodoItem({
 				{isEdit ? (
 					<button
 						className='bg-orange-500 hover:bg-orange-700 text-white font-bold py-1 px-2 rounded'
-						onClick={() => handleSave(newText)}>
+						onClick={() => handleSave(index, newText)}>
 						Save
 					</button>
 				) : (

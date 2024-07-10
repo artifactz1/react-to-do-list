@@ -47,22 +47,24 @@ function App() {
 		getTodo();
 	}, []);
 
-	const completeTodo = async id => {
+	const updateTodo = async item => {
+		const res = !item.complete;
 		if (user) {
 			try {
-				const { data, error } = await supabase
+				const { updatedItem, error } = await supabase
 					.from("todo")
-					.update({ complete: true })
-					.eq("id", id)
+					.update({ complete: res })
+					.eq("id", item.id)
 					.select("*")
 					.single();
 
-				console.log("Complete Button", data);
+				console.log("Complete Button", updatedItem);
 
 				if (error) {
 					console.error("Error updating data: ", error);
 				} else {
-					console.log("Todo item updated successfully:", data);
+					console.log("Todo item updated successfully:", updatedItem);
+					// setTodos(currentTodo => [...currentTodo, updatedItem]);
 					getTodo();
 				}
 			} catch (err) {
@@ -75,22 +77,21 @@ function App() {
 		}
 	};
 
-	const incompleteTodo = async id => {
+	const removeTodo = async index => {
 		if (user) {
 			try {
-				const { data, error } = await supabase
+				const { updatedItem, error } = await supabase
 					.from("todo")
-					.update({ complete: false })
-					.eq("id", id)
-					.select("*")
-					.single();
+					.delete()
+					.eq("id", index);
 
-				console.log("Complete Button", data);
+				console.log("Complete Button", updatedItem);
 
 				if (error) {
 					console.error("Error updating data: ", error);
 				} else {
-					console.log("Todo item updated successfully:", data);
+					console.log("Todo item updated successfully:", updatedItem);
+					// setTodos(currentTodo => [...currentTodo, updatedItem]);
 					getTodo();
 				}
 			} catch (err) {
@@ -101,18 +102,39 @@ function App() {
 			setError(errorMessage);
 			console.error(errorMessage);
 		}
+
+		// const newTodos = [...todos];
+		// newTodos.splice(index, 1);
+		// setTodos(newTodos);
 	};
 
-	const removeTodo = index => {
-		const newTodos = [...todos];
-		newTodos.splice(index, 1);
-		setTodos(newTodos);
-	};
+	const editTodo = async (index, newText) => {
+		if (user) {
+			try {
+				const { updatedItem, error } = await supabase
+					.from("todo")
+					.update({ title: newText })
+					.eq("id", index)
+					.select("*")
+					.single();
 
-	const editTodo = (index, newText) => {
-		const newTodos = [...todos];
-		newTodos[index].text = newText;
-		setTodos(newTodos);
+				console.log("Complete Button", updatedItem);
+
+				if (error) {
+					console.error("Error updating data: ", error);
+				} else {
+					console.log("Todo item updated successfully:", updatedItem);
+					// setTodos(currentTodo => [...currentTodo, updatedItem]);
+					getTodo();
+				}
+			} catch (err) {
+				console.error("An unexpected error occurred:", err);
+			}
+		} else {
+			const errorMessage = "User is not authenticated";
+			setError(errorMessage);
+			console.error(errorMessage);
+		}
 	};
 
 	const login = async () => {
@@ -177,8 +199,7 @@ function App() {
 								<TodoItem
 									index={item.id}
 									item={item}
-									incompleteTodo={incompleteTodo}
-									completeTodo={completeTodo}
+									updateTodo={updateTodo}
 									removeTodo={removeTodo}
 									editTodo={editTodo}
 								/>
